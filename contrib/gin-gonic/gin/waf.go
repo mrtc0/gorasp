@@ -4,27 +4,21 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mrtc0/gowaf/emitter"
+	httpHandler "github.com/mrtc0/gorasp/handler/http"
 )
 
-func waf(c *gin.Context) {
-	var params map[string]string
-
-	for _, v := range c.Params {
-		params[v.Key] = v.Value
-	}
-
+func handle(c *gin.Context) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Request = r
 		c.Next()
 	})
 
-	emitter.WrapHandler(handler, params).ServeHTTP(c.Writer, c.Request)
+	httpHandler.WrapHandler(handler).ServeHTTP(c.Writer, c.Request)
 }
 
 func WafMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		waf(c)
+		handle(c)
 		c.Next()
 	}
 }

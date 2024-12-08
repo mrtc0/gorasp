@@ -1,4 +1,4 @@
-module github.com/mrtc0/gowaf
+module github.com/mrtc0/gorasp
 
 go 1.23.3
 
