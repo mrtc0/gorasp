@@ -32,11 +32,20 @@ func Register(driverName string) (string, error) {
 	regMu.Lock()
 	defer regMu.Unlock()
 	name := fmt.Sprintf("%s-gorasp-%d", driverName, len(sql.Drivers()))
-	sql.Register(name, driver)
+	sql.Register(name, Wrap(driver))
 
 	return name, nil
 }
 
 func (d raspDriver) Open(name string) (driver.Conn, error) {
-	return d.Open(name)
+	c, err := d.Driver.Open(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return raspConn{c}, nil
+}
+
+func Wrap(d driver.Driver) driver.Driver {
+	return raspDriver{d}
 }

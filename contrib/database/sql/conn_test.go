@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	_ "github.com/mattn/go-sqlite3"
+
 	raspSql "github.com/mrtc0/gorasp/contrib/database/sql"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
