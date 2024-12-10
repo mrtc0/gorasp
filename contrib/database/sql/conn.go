@@ -14,7 +14,12 @@ type raspConn struct {
 
 func (c raspConn) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx, error) {
 	if connBeginTx, ok := c.Conn.(driver.ConnBeginTx); ok {
-		return connBeginTx.BeginTx(ctx, opts)
+		tx, err := connBeginTx.BeginTx(ctx, opts)
+		if err != nil {
+			return nil, err
+		}
+
+		return raspTx{tx}, nil
 	}
 
 	tx, err := c.Conn.Begin()
@@ -22,7 +27,7 @@ func (c raspConn) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx
 		return nil, err
 	}
 
-	return tx, nil
+	return raspTx{tx}, nil
 }
 
 func (c raspConn) Ping(ctx context.Context) (err error) {
