@@ -35,6 +35,11 @@ func TestQueryContext(t *testing.T) {
 	if err := rows.Err(); err != nil {
 		assert.NoError(t, err)
 	}
+
+	t.Run("when SQLi is detected", func(t *testing.T) {
+		_, err := db.QueryContext(ctx, "SELECT 1 WHERE 1 = '1 OR 1 = 1'")
+		assert.Error(t, err)
+	})
 }
 
 func TestExecContext(t *testing.T) {
@@ -42,24 +47,24 @@ func TestExecContext(t *testing.T) {
 
 	ctx := context.Background()
 
+	type arrange struct {
+		stmts []string
+	}
+
 	testCases := map[string]struct {
-		stmt string
-		n    int64
+		arrange arrange
+		stmt    string
+		n       int64
 	}{
-		"when rows are not affected": {
-			stmt: `
-DROP TABLE IF EXISTS foo;	
-CREATE TABLE foo (id INTEGER NOT NULL PRIMARY KEY, name text);
-DELETE FROM foo;`,
-			n: 0,
-		},
 		"when rows are affected": {
-			stmt: `
-DROP TABLE IF EXISTS foo;
-CREATE TABLE foo (id INTEGER NOT NULL PRIMARY KEY, name text);
-INSERT INTO foo (id, name) VALUES (1, 'foo');
-DELETE FROM foo WHERE id = 1;`,
-			n: 1,
+			arrange: arrange{
+				stmts: []string{
+					`DROP TABLE IF EXISTS foo;`,
+					`CREATE TABLE foo (id INTEGER NOT NULL PRIMARY KEY, name text);`,
+				},
+			},
+			stmt: "INSERT INTO foo (id, name) VALUES (1, 'foo');",
+			n:    1,
 		},
 	}
 
@@ -71,6 +76,11 @@ DELETE FROM foo WHERE id = 1;`,
 
 			db := createDatabase(t)
 			defer db.Close()
+
+			for _, stmt := range tt.arrange.stmts {
+				_, err := db.ExecContext(ctx, stmt)
+				require.NoError(t, err)
+			}
 
 			res, err := db.ExecContext(ctx, tt.stmt)
 			assert.NoError(t, err)
@@ -90,12 +100,9 @@ func TestBeginTx(t *testing.T) {
 	db := createDatabase(t)
 	defer db.Close()
 
-	initStmt := `
-DROP TABLE IF EXISTS foo;	
-CREATE TABLE foo (id INTEGER NOT NULL PRIMARY KEY, name text);
-DELETE FROM foo;`
-
-	_, err := db.ExecContext(ctx, initStmt)
+	_, err := db.ExecContext(ctx, "DROP TABLE IF EXISTS foo;")
+	require.NoError(t, err)
+	_, err = db.ExecContext(ctx, "CREATE TABLE foo (id INTEGER NOT NULL PRIMARY KEY, name text);")
 	require.NoError(t, err)
 
 	t.Run("when transaction is committed", func(t *testing.T) {

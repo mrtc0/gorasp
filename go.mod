@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/stretchr/testify v1.9.0
+	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 )
 
 require (

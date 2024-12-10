@@ -3,6 +3,8 @@ package sql
 import (
 	"context"
 	"database/sql/driver"
+
+	sqliHandler "github.com/mrtc0/gorasp/handler/sqli"
 )
 
 // For type assertion
@@ -39,6 +41,9 @@ func (c raspConn) Ping(ctx context.Context) (err error) {
 
 func (c raspConn) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (rows driver.Rows, err error) {
 	if queryerContext, ok := c.Conn.(driver.QueryerContext); ok {
+		if err := sqliHandler.ProtectSQLOperation(ctx, query); err != nil {
+			return nil, err
+		}
 		rows, err = queryerContext.QueryContext(ctx, query, args)
 		return rows, err
 	}
@@ -46,6 +51,10 @@ func (c raspConn) QueryContext(ctx context.Context, query string, args []driver.
 	if queryer, ok := c.Conn.(driver.Queryer); ok {
 		dargs, err := namedValueToValue(args)
 		if err != nil {
+			return nil, err
+		}
+
+		if err := sqliHandler.ProtectSQLOperation(ctx, query); err != nil {
 			return nil, err
 		}
 
@@ -58,6 +67,10 @@ func (c raspConn) QueryContext(ctx context.Context, query string, args []driver.
 
 func (c raspConn) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (result driver.Result, err error) {
 	if execContext, ok := c.Conn.(driver.ExecerContext); ok {
+		if err := sqliHandler.ProtectSQLOperation(ctx, query); err != nil {
+			return nil, err
+		}
+
 		result, err = execContext.ExecContext(ctx, query, args)
 		return result, err
 	}
@@ -65,6 +78,10 @@ func (c raspConn) ExecContext(ctx context.Context, query string, args []driver.N
 	if execer, ok := c.Conn.(driver.Execer); ok {
 		dargs, err := namedValueToValue(args)
 		if err != nil {
+			return nil, err
+		}
+
+		if err := sqliHandler.ProtectSQLOperation(ctx, query); err != nil {
 			return nil, err
 		}
 

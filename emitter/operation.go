@@ -2,14 +2,25 @@ package emitter
 
 type Operation interface {
 	unwrap() *operation
+	SetIsBlock(b bool)
+	IsBlocked() bool
 }
 
 type operation struct {
 	eventRegister
+	isBlocked bool
 }
 
 func (o *operation) unwrap() *operation {
 	return o
+}
+
+func (o *operation) SetIsBlock(b bool) {
+	o.isBlocked = b
+}
+
+func (o *operation) IsBlocked() bool {
+	return o.isBlocked
 }
 
 type ArgOf[O Operation] interface {
@@ -21,6 +32,7 @@ func NewOperation() Operation {
 		eventRegister: eventRegister{
 			listeners: make(map[string][]any, 2),
 		},
+		isBlocked: false,
 	}
 }
 
