@@ -6,7 +6,7 @@ import (
 	"github.com/mrtc0/gorasp/lib"
 )
 
-func IsSQLi(value string) error {
+func IsSQLiPayload(value string) error {
 	var fingerprint string
 	isSQLi := lib.LibinjectionSQLiFunc(value, len(value), fingerprint)
 	if isSQLi == 1 {

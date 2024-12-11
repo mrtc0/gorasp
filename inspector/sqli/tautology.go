@@ -1,13 +1,15 @@
 package sqli
 
 import (
+	"fmt"
+
 	"github.com/xwb1989/sqlparser"
 )
 
 func IsWhereTautologyFull(sql string) (bool, error) {
 	stmt, err := sqlparser.Parse(sql)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to parse SQL: %w", err)
 	}
 
 	selectStmt, ok := stmt.(*sqlparser.Select)

@@ -45,6 +45,11 @@ func TestIsWhereTautologyFull(t *testing.T) {
 			expect:    true,
 			expectErr: false,
 		},
+		{
+			query:     "SELECT * FROM users email = ? AND password = ?;",
+			expect:    false,
+			expectErr: false,
+		},
 		// {
 		// 	query:     "SELECT * FROM users WHERE id = 1 OR TRUE",
 		// 	expect:    true,

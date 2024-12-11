@@ -12,5 +12,9 @@ func IsSQLiQuery(query string) error {
 		return fmt.Errorf("SQLi detected")
 	}
 
+	if err = IsQueryCommentInjection(query); err != nil {
+		return err
+	}
+
 	return nil
 }
